@@ -1,4 +1,4 @@
-// Configuration du Pomodoro
+// Configuration du Pomodoro défaut
 let config = {
     workMinutes: 25,
     shortBreakMinutes: 5,
@@ -9,6 +9,9 @@ let config = {
     timer: null
 };
 
+// Assets son
+const courte = "assets/courte.mp3";
+const longue = "assets/longue.mp3";
 // Éléments du DOM
 const timerDisplay = document.getElementById('timer');
 const progressDisplay = document.getElementById('progress');
@@ -76,7 +79,7 @@ function startTimer() {
                 
                 if (config.currentRepetition < config.repetitions) {
                     // Pause courte
-                    alert('Pause courte !');
+                    (new Audio(courte)).play()
                     timeLeft = config.shortBreakMinutes * 60;
                     config.timer = setInterval(() => {
                         timeLeft--;
@@ -90,7 +93,7 @@ function startTimer() {
                     }, 1000);
                 } else if (config.currentRepetition === config.repetitions) {
                     // Pause longue
-                    alert('Pause longue !');
+                    (new Audio(longue)).play()
                     timeLeft = config.longBreakMinutes * 60;
                     config.timer = setInterval(() => {
                         timeLeft--;

@@ -14,14 +14,13 @@
 <body>
   <div class="pomodoro">
     <h1>Pomodoro</h1>
-    <div id="timer">25:00</div>
-    <div id="progress">Étape 0/4</div>
     <div class="buttons">
       <button id="start">Démarrer</button>
       <button id="reset">Réinitialiser</button>
       <button id="configBtn">Configuration</button>
     </div>
-    
+    <div id="timer">25:00</div>
+    <div id="progress">Étape 0/4</div>
     <div id="configSection" class="config-section hidden">
       <div class="config">
         <div class="config-item">
@@ -41,6 +40,10 @@
           <input type="number" id="repetitions" value="4" min="1" max="10">
         </div>
       </div>
+    </div>
+    <div class="social">
+      <div class="socials-items" id="spotify"><a target="_blank" rel="noopener noreferrer" href="https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=3547aa5580bb4c71"><i class="fa-brands fa-spotify" style="color: #63E6BE;"></i> Spotify</a></div>
+      <div class="socials-items" id="youtube"><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/watch?v=jfKfPfyJRdk"><i class="fa-brands fa-youtube" style="color: #ffffff;"></i> Youtube</a></div>
     </div>
   </div>
   <script src="script.js"></script>
