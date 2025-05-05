@@ -25,6 +25,10 @@ const workMinutesInput = document.getElementById('workMinutes');
 const shortBreakMinutesInput = document.getElementById('shortBreakMinutes');
 const longBreakMinutesInput = document.getElementById('longBreakMinutes');
 const repetitionsInput = document.getElementById('repetitions');
+const workMinutesValue = document.getElementById('workMinutesvalue');
+const shortBreakMinutesValue = document.getElementById('shortBreakMinutesValue');
+const longBreakMinutesValue = document.getElementById('longBreakMinutesValue');
+const repetitionsValue = document.getElementById('repetitionsValue');
 
 // Gestion de l'affichage de la configuration
 function toggleConfig() {
@@ -38,7 +42,15 @@ function updateConfig() {
     config.shortBreakMinutes = parseInt(shortBreakMinutesInput.value);
     config.longBreakMinutes = parseInt(longBreakMinutesInput.value);
     config.repetitions = parseInt(repetitionsInput.value);
+    workMinutesValue.textContent = config.workMinutes;
+    shortBreakMinutesValue.textContent = config.shortBreakMinutes;
+    longBreakMinutesValue.textContent = config.longBreakMinutes;
+    repetitionsValue.textContent = config.repetitions;
     updateProgress();
+    // Mise à jour de l'affichage du timer si le timer n'est pas en cours
+    if (!config.isRunning) {
+        updateDisplay(config.workMinutes, 0);
+    }
 }
 
 // Mise à jour de l'affichage
@@ -133,10 +145,10 @@ resetButton.addEventListener('click', resetTimer);
 configButton.addEventListener('click', toggleConfig);
 
 // Événements de configuration
-workMinutesInput.addEventListener('change', updateConfig);
-shortBreakMinutesInput.addEventListener('change', updateConfig);
-longBreakMinutesInput.addEventListener('change', updateConfig);
-repetitionsInput.addEventListener('change', updateConfig);
+workMinutesInput.addEventListener('input', updateConfig);
+shortBreakMinutesInput.addEventListener('input', updateConfig);
+longBreakMinutesInput.addEventListener('input', updateConfig);
+repetitionsInput.addEventListener('input', updateConfig);
 
 // Initialisation
 updateConfig();
