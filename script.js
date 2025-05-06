@@ -34,6 +34,17 @@ const repetitionsValue = document.getElementById('repetitionsValue');
 function toggleConfig() {
     configSection.classList.toggle('hidden');
     configButton.textContent = configSection.classList.contains('hidden') ? 'Configuration' : 'Fermer';
+    
+    // Gestion de l'affichage des boutons
+    if (configSection.classList.contains('hidden')) {
+        startButton.style.display = 'block';
+        resetButton.style.display = 'block';
+        configButton.style.border = "0px solid rgba(255, 255, 255, 0.32)";
+    } else {
+        startButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        configButton.style.border = "1px solid rgba(255, 255, 255, 0.32)";
+    }
 }
 
 // Mise à jour de la configuration
