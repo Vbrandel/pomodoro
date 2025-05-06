@@ -91,7 +91,8 @@ function startTimer() {
                 
                 if (config.currentRepetition < config.repetitions) {
                     // Pause courte
-                    (new Audio(courte)).play()
+                    document.body.classList.add('short-break');
+                    (new Audio(courte)).play();
                     timeLeft = config.shortBreakMinutes * 60;
                     config.timer = setInterval(() => {
                         timeLeft--;
@@ -100,12 +101,14 @@ function startTimer() {
                         
                         if (timeLeft <= 0) {
                             clearInterval(config.timer);
+                            document.body.classList.remove('short-break');
                             startTimer(); // Recommence le cycle
                         }
                     }, 1000);
                 } else if (config.currentRepetition === config.repetitions) {
                     // Pause longue
-                    (new Audio(longue)).play()
+                    document.body.classList.remove('short-break');
+                    (new Audio(longue)).play();
                     timeLeft = config.longBreakMinutes * 60;
                     config.timer = setInterval(() => {
                         timeLeft--;
@@ -134,6 +137,7 @@ function resetTimer() {
     config.isRunning = false;
     config.currentRepetition = 0;
     startButton.textContent = 'Démarrer';
+    document.body.classList.remove('short-break');
     updateConfig();
     updateDisplay(config.workMinutes, 0);
     updateProgress();
