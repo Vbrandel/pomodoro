@@ -1,171 +1,159 @@
-// Configuration du Pomodoro défaut
-let config = {
-    workMinutes: 25,
-    shortBreakMinutes: 5,
-    longBreakMinutes: 15,
-    repetitions: 4,
-    currentRepetition: 0,
-    isRunning: false,
-    timer: null
-};
-
-// Assets son
+// // Assets son
 const courte = "assets/courte.mp3";
 const longue = "assets/longue.mp3";
-// Éléments du DOM
-const timerDisplay = document.getElementById('timer');
-const progressDisplay = document.getElementById('progress');
-const startButton = document.getElementById('start');
-const resetButton = document.getElementById('reset');
-const configButton = document.getElementById('configBtn');
-const configSection = document.getElementById('configSection');
 
-// Éléments de configuration
-const workMinutesInput = document.getElementById('workMinutes');
-const shortBreakMinutesInput = document.getElementById('shortBreakMinutes');
-const longBreakMinutesInput = document.getElementById('longBreakMinutes');
-const repetitionsInput = document.getElementById('repetitions');
-const workMinutesValue = document.getElementById('workMinutesvalue');
-const shortBreakMinutesValue = document.getElementById('shortBreakMinutesValue');
-const longBreakMinutesValue = document.getElementById('longBreakMinutesValue');
-const repetitionsValue = document.getElementById('repetitionsValue');
+let timerDisplay = document.getElementById("timer");
+let progressDisplay = document.getElementById("progress");
 
-// Gestion de l'affichage de la configuration
-function toggleConfig() {
-    configSection.classList.toggle('hidden');
-    configButton.textContent = configSection.classList.contains('hidden') ? 'Configuration' : 'Fermer';
-    
-    // Gestion de l'affichage des boutons
-    if (configSection.classList.contains('hidden')) {
-        startButton.style.display = 'block';
-        resetButton.style.display = 'block';
-        configButton.style.border = "0px solid rgba(255, 255, 255, 0.32)";
-    } else {
-        startButton.style.display = 'none';
-        resetButton.style.display = 'none';
-        configButton.style.border = "1px solid rgba(255, 255, 255, 0.32)";
-    }
+let startBtn = document.getElementById("start");
+let resetBtn = document.getElementById("reset");
+let configBtn = document.getElementById("configBtn");
+
+let workInput = document.getElementById("workMinutes");
+let shortBreakInput = document.getElementById("shortBreakMinutes");
+let repetitionsInput = document.getElementById("repetitions");
+
+let workValue = document.getElementById("workMinutesvalue");
+let shortBreakValue = document.getElementById("shortBreakMinutesValue");
+let repetitionsValue = document.getElementById("repetitionsValue");
+
+let configSection = document.getElementById("configSection");
+
+let timer;
+let isRunning = false;
+let isPaused = false;
+let isWorkTime = true;
+let timeLeft;
+let cycle = 0;
+
+// Valeur initiale
+let workMinutes = parseInt(workInput.value);
+let shortBreakMinutes = parseInt(shortBreakInput.value);
+let repetitions = parseInt(repetitionsInput.value);
+
+// Mise a jour des valeurs affichées grâce aux ranges
+workInput.addEventListener("input", () => {
+  workMinutes = parseInt(workInput.value);
+  workValue.textContent = workMinutes;
+  resetTimer();
+});
+
+shortBreakInput.addEventListener("input", () => {
+  shortBreakMinutes = parseInt(shortBreakInput.value);
+  shortBreakValue.textContent = shortBreakMinutes;
+  resetTimer();
+});
+
+repetitionsInput.addEventListener("input", () => {
+  repetitions = parseInt(repetitionsInput.value);
+  repetitionsValue.textContent = repetitions;
+  resetTimer();
+});
+
+// Affichage de la modal de configuration
+configBtn.addEventListener("click", () => {
+  configSection.classList.toggle("hidden");
+});
+
+// Bouton de démarrage
+startBtn.addEventListener("click", () => {
+  if (!isRunning) {
+    startTimer();
+  } else {
+    pauseTimer();
+  }
+  updateButtonState();
+});
+
+function updateButtonState() {
+  // Supprimer toutes les classes d'état
+  startBtn.classList.remove("btn-start", "btn-pause", "btn-resume");
+  
+  if (!isRunning && !isPaused) {
+    // État initial ou après reset
+    startBtn.classList.add("btn-start");
+    startBtn.textContent = "Démarrer";
+  } else if (isRunning && !isPaused) {
+    // Timer en cours
+    startBtn.classList.add("btn-pause");
+    startBtn.textContent = "Pause";
+  } else if (isPaused) {
+    // Timer en pause
+    startBtn.classList.add("btn-resume");
+    startBtn.textContent = "Reprendre";
+  }
 }
 
-// Mise à jour de la configuration
-function updateConfig() {
-    config.workMinutes = parseInt(workMinutesInput.value);
-    config.shortBreakMinutes = parseInt(shortBreakMinutesInput.value);
-    config.longBreakMinutes = parseInt(longBreakMinutesInput.value);
-    config.repetitions = parseInt(repetitionsInput.value);
-    workMinutesValue.textContent = config.workMinutes;
-    shortBreakMinutesValue.textContent = config.shortBreakMinutes;
-    longBreakMinutesValue.textContent = config.longBreakMinutes;
-    repetitionsValue.textContent = config.repetitions;
-    updateProgress();
-    // Mise à jour de l'affichage du timer si le timer n'est pas en cours
-    if (!config.isRunning) {
-        updateDisplay(config.workMinutes, 0);
-    }
-}
+// Bouton de réinitialisation
+resetBtn.addEventListener("click", resetTimer);
 
-// Mise à jour de l'affichage
-function updateDisplay(minutes, seconds) {
-    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-// Mise à jour de la progression
-function updateProgress() {
-    progressDisplay.textContent = `Étape ${config.currentRepetition}/${config.repetitions}`;
-}
-
-// Formatage du temps
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return { minutes, seconds: remainingSeconds };
-}
-
-// Démarrage du timer
 function startTimer() {
-    if (!config.isRunning) {
-        updateConfig();
-        config.isRunning = true;
-        startButton.textContent = 'Pause';
+  isRunning = true;
+  isPaused = false;
+
+  if (timeLeft === undefined) {
+    timeLeft = isWorkTime ? workMinutes * 60 : shortBreakMinutes * 60;
+  }
+
+  timer = setInterval(() => {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+
+      if (isWorkTime) {
+        cycle++;
+        if (cycle >= repetitions) {
+          progressDisplay.textContent = `Félicitations ! Le pomodoro est terminé !`;
+          isRunning = false;
+          document.body.classList.remove('short-break'); // Retirer le fond de nuit
+          (new Audio(longue)).play(); // Son long pour la fin 
+          updateButtonState();
+          return;
+        }
         
-        let timeLeft = config.workMinutes * 60;
-        
-        config.timer = setInterval(() => {
-            timeLeft--;
-            const { minutes, seconds } = formatTime(timeLeft);
-            updateDisplay(minutes, seconds);
-            
-            if (timeLeft <= 0) {
-                clearInterval(config.timer);
-                config.currentRepetition++;
-                updateProgress();
-                
-                if (config.currentRepetition < config.repetitions) {
-                    // Pause courte
-                    document.body.classList.add('short-break');
-                    (new Audio(courte)).play();
-                    timeLeft = config.shortBreakMinutes * 60;
-                    config.timer = setInterval(() => {
-                        timeLeft--;
-                        const { minutes, seconds } = formatTime(timeLeft);
-                        updateDisplay(minutes, seconds);
-                        
-                        if (timeLeft <= 0) {
-                            clearInterval(config.timer);
-                            document.body.classList.remove('short-break');
-                            startTimer(); // Recommence le cycle
-                        }
-                    }, 1000);
-                } else if (config.currentRepetition === config.repetitions) {
-                    // Pause longue
-                    document.body.classList.remove('short-break');
-                    (new Audio(longue)).play();
-                    timeLeft = config.longBreakMinutes * 60;
-                    config.timer = setInterval(() => {
-                        timeLeft--;
-                        const { minutes, seconds } = formatTime(timeLeft);
-                        updateDisplay(minutes, seconds);
-                        
-                        if (timeLeft <= 0) {
-                            clearInterval(config.timer);
-                            resetTimer();
-                        }
-                    }, 1000);
-                }
-            }
-        }, 1000);
-    } else {
-        // Pause
-        clearInterval(config.timer);
-        config.isRunning = false;
-        startButton.textContent = 'Reprendre';
+        // Transition vers la pause courte
+        isWorkTime = false;
+        timeLeft = shortBreakMinutes * 60;
+        progressDisplay.textContent = `Pause courte - Étape ${cycle}/${repetitions}`;
+        document.body.classList.add('short-break'); // Activer le fond de nuit
+        (new Audio(courte)).play(); // Son court pour la fin 
+      } else {
+        // Transition vers le travail
+        isWorkTime = true;
+        timeLeft = workMinutes * 60;
+        progressDisplay.textContent = `Travail - Étape ${cycle + 1}/${repetitions}`;
+        document.body.classList.remove('short-break'); // Retirer le fond de nuit
+        (new Audio(longue)).play(); // Son long pour la fin
+      }
+
+      startTimer();
     }
+
+    timeLeft--;
+  }, 1000);
 }
 
-// Réinitialisation du timer
+function pauseTimer() {
+  clearInterval(timer);
+  isRunning = false;
+  isPaused = true;
+}
+
 function resetTimer() {
-    clearInterval(config.timer);
-    config.isRunning = false;
-    config.currentRepetition = 0;
-    startButton.textContent = 'Démarrer';
-    document.body.classList.remove('short-break');
-    updateConfig();
-    updateDisplay(config.workMinutes, 0);
-    updateProgress();
+  clearInterval(timer);
+  isRunning = false;
+  isPaused = false;
+  isWorkTime = true;
+  cycle = 0;
+  timeLeft = workMinutes * 60;
+  timerDisplay.textContent = `${workMinutes.toString().padStart(2, "0")}:00`;
+  progressDisplay.textContent = `Travail - Étape 1/${repetitions}`;
+  document.body.classList.remove('short-break'); // Retirer le fond de nuit
+  updateButtonState();
 }
 
-// Événements
-startButton.addEventListener('click', startTimer);
-resetButton.addEventListener('click', resetTimer);
-configButton.addEventListener('click', toggleConfig);
-
-// Événements de configuration
-workMinutesInput.addEventListener('input', updateConfig);
-shortBreakMinutesInput.addEventListener('input', updateConfig);
-longBreakMinutesInput.addEventListener('input', updateConfig);
-repetitionsInput.addEventListener('input', updateConfig);
-
-// Initialisation
-updateConfig();
-updateDisplay(config.workMinutes, 0);
-updateProgress();
